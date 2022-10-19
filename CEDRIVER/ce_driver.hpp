@@ -63,24 +63,20 @@ namespace ce_driver_wrapper {
 			if (hDrv_) CloseHandle(hDrv_);
 		}
 
-		/* AesopEngine AESOP64 */
-		const auto ce_service_name() const {
-			return std::wstring(L"CEDRIVER73");
-		}
 
 		/* https://github.com/cheat-engine/cheat-engine/blob/7.4/DBKKernel/sigcheck.c */
 		bool load_driver(const fs::path driver, const std::wstring service = std::wstring()) {
 			bool isOk = false;
 
 			auto ce_driver = driver.wstring();
-			auto ce_service = service.empty() ? ce_service_name() : service;
+			if (!service.empty()) ce_service_name() = service;
 
 			SC_HANDLE hManager = NULL, hService = NULL; HKEY hKeyService = NULL;
 
 			hManager = OpenSCManagerW(NULL, NULL, GENERIC_READ | GENERIC_WRITE);
 			if (!hManager) goto _cleanup;
 
-			hService = OpenServiceW(hManager, ce_service.c_str(), SERVICE_ALL_ACCESS);
+			hService = OpenServiceW(hManager, ce_service_name().c_str(), SERVICE_ALL_ACCESS);
 			if (!hService) goto _cleanup;
 
 			ChangeServiceConfigW(
@@ -149,27 +145,30 @@ namespace ce_driver_wrapper {
 		}
 
 	private:
-		const std::wstring ce_display_name() const {
+		std::wstring ce_service_ = std::wstring(L"CEDRIVER73");
+		std::wstring& ce_service_name() { return ce_service_; }
+
+		const std::wstring ce_display_name() {
 			return ce_service_name();
 		}
-		const std::wstring ce_object_path() const {
-			return L"\\\\.\\" + ce_service_name();
-		};
-		const std::wstring driver_string() const {
-			return L"\\Device\\" + ce_service_name();
-		};
-		const std::wstring device_string() const {
-			return L"\\DosDevices\\" + ce_service_name();
-		};
-		const std::wstring process_event_string() const {
-			return L"\\BaseNamedObjects\\" + std::wstring(L"DBKProcList60");
-		};
-		const std::wstring thread_event_string() const {
-			return  L"\\BaseNamedObjects\\" + std::wstring(L"DBKThreadList60");
-		};
-		const std::wstring ce_reg_path() const {
+		const std::wstring ce_reg_path() {
 			return L"SYSTEM\\CurrentControlSet\\Services\\" + ce_service_name();
 		}
+		const std::wstring ce_object_path() {
+			return L"\\\\.\\" + ce_service_name();
+		};
+		const std::wstring driver_string() {
+			return L"\\Device\\" + ce_service_name();
+		};
+		const std::wstring device_string() {
+			return L"\\DosDevices\\" + ce_service_name();
+		};
+		const std::wstring process_event_string() {
+			return L"\\BaseNamedObjects\\" + std::wstring(L"DBKProcList60");
+		};
+		const std::wstring thread_event_string() {
+			return  L"\\BaseNamedObjects\\" + std::wstring(L"DBKThreadList60");
+		};
 
 		HANDLE hDrv_ = INVALID_HANDLE_VALUE;
 	};

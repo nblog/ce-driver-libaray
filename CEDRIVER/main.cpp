@@ -14,8 +14,8 @@ int main()
 
 	ce_driver drv;
 
-	/* AesopEngine */
-	drv.load_driver(R"(C:\Public\runtime\aesop64.sys)");
+	/* AesopEngine AESOP64 */
+	drv.load_driver(R"(C:\Public\runtime\aesop64.sys)", L"AESOP64");
 
 	struct {
 		DWORD processId;
@@ -33,6 +33,9 @@ int main()
 	};
 
 	drv.device_io_control( ioctl::CE_OPENPROCESS, req, res );
+
+	::printf_s("handle: %p\n", res.res.Processhandle);
+	::system("pause");
 
 	return 0;
 }
